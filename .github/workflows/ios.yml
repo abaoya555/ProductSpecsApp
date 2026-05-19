@@ -10,27 +10,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
       - name: Build App
         run: |
           cd ProductSpecsApp
-
           xcodebuild \
           -scheme ProductSpecsApp \
           -project ProductSpecsApp.xcodeproj \
           -configuration Release \
           -sdk iphoneos \
           CODE_SIGNING_ALLOWED=NO \
+          -derivedDataPath build \
           build
 
       - name: Create IPA
         run: |
-          mkdir Payload
-
-          cp -r ProductSpecsApp/build/Release-iphoneos/ProductSpecsApp.app Payload/
-
+          mkdir -p Payload
+          APP_PATH=$(find ProductSpecsApp/build -name "*.app" -type d | head -n 1)
+          echo "Found app at: $APP_PATH"
+          cp -r "$APP_PATH" Payload/
           zip -r ProductSpecsApp.ipa Payload
 
       - name: Upload IPA

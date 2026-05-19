@@ -1,0 +1,33 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          xcodebuild \
+          -project ProductSpecsApp/ProductSpecsApp.xcodeproj \
+          -scheme ProductSpecsApp \
+          -sdk iphoneos \
+          -configuration Release \
+          CODE_SIGNING_ALLOWED=NO
+
+      - name: Package
+        run: |
+          mkdir Payload
+          cp -r build/Release-iphoneos/ProductSpecsApp.app Payload/
+          zip -r ProductSpecsApp.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProductSpecsApp-IPA
+          path: ProductSpecsApp.ipa
